@@ -10,3 +10,6 @@ The application will notify the user when
 2. The bus arrive the bus station you want. 
 
 Lehigh University has their office application which can show the real time bus location, but this function is missing. 
+
+TODO: 
+1. show the selected annotations.
