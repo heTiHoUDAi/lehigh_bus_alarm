@@ -70,7 +70,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         self.mainMapView.setRegion(currentRegion, animated: true)
         let leftMargin:CGFloat = 10
         let topMargin:CGFloat = 94
-        let mapWidth:CGFloat = 343
+        let mapWidth:CGFloat = 356
         let mapHeight:CGFloat = 532
         
         self.mainMapView.frame = CGRect(x: leftMargin, y: topMargin, width: mapWidth, height: mapHeight)
@@ -106,7 +106,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         let coordinate = self.mainMapView.convert(location, toCoordinateFrom: self.mainMapView)
         if (gestureRecognizer.state == .ended){
             print("adding custom pin")
-            self.current_custom_choice.append(busClass(name: "Custom Location"+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
+            self.current_custom_choice.append(busClass(name: "Custom Location "+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
         }
     
     }
