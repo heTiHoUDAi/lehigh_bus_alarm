@@ -42,6 +42,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     var start_to_track = false
     var track_target = busstation(lag: 0, long: 0, name : "", sacu_dir_next : "", parkard_dir_next : "")
     var current_custom_choice: [busClass] = []
+    var polylineCCRoute : [MKPolyline] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,6 +77,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         GCD_timer_callback()
         
         initalBusStation()
+        setupCCRouteOverlay()
         
         // init drawer
         drawerView = setupProgrammaticDrawerView()
@@ -98,7 +100,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         return true
     }
     
-    
     @objc func handleTap(gestureRecognizer: UITapGestureRecognizer){
         let location = gestureRecognizer.location(in: self.mainMapView)
         let coordinate = self.mainMapView.convert(location, toCoordinateFrom: self.mainMapView)
@@ -106,8 +107,23 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
             print("adding custom pin")
             self.current_custom_choice.append(busClass(name: "Custom Location"+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
         }
-    
     }
+    
+    func setupCCRouteOverlay(){
+        let polylineCoor = [CLLocationCoordinate2D(latitude: 40.602185, longitude: -75.358352), CLLocationCoordinate2D(latitude: 40.601918, longitude: -75.360385)]
+        let polyline = MKPolyline(coordinates: polylineCoor, count: 2)
+        
+        self.polylineCCRoute.append(polyline)
+        self.mainMapView.addOverlays(polylineCCRoute)
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let polylineView = MKPolylineRenderer(overlay: overlay)
+        polylineView.strokeColor = UIColor.green
+        polylineView.fillColor = UIColor.green
+        return polylineView
+    }
+    
     
     func setupProgrammaticDrawerView() -> DrawerView {
         // Create the drawer programmatically.
