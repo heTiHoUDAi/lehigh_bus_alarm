@@ -1,0 +1,20 @@
+PODS:
+  - DrawerView (1.2.2)
+  - SwiftyJSON (4.3.0)
+
+DEPENDENCIES:
+  - DrawerView
+  - SwiftyJSON (~> 4.0)
+
+SPEC REPOS:
+  trunk:
+    - DrawerView
+    - SwiftyJSON
+
+SPEC CHECKSUMS:
+  DrawerView: 0870f61b8aabc17c01b3095afd3b5189befa7a93
+  SwiftyJSON: 6faa0040f8b59dead0ee07436cbf76b73c08fd08
+
+PODFILE CHECKSUM: ebcb1874e104294f79ec84c8a39f459c75028d19
+
+COCOAPODS: 1.8.4

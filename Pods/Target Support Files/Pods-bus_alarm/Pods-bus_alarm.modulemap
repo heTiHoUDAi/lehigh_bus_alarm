@@ -1,0 +1,6 @@
+framework module Pods_bus_alarm {
+  umbrella header "Pods-bus_alarm-umbrella.h"
+
+  export *
+  module * { export * }
+}

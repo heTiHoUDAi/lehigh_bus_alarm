@@ -1,13 +1,14 @@
 //
 //  SceneDelegate.swift
-//  bus_alarm
+//  LBUS
 //
-//  Created by Zisheng Wang on 11/13/19.
+//  Created by Zisheng Wang on 11/11/19.
 //  Copyright © 2019 Zisheng Wang. All rights reserved.
 //
 
 import UIKit
 
+@available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
