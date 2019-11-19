@@ -26,9 +26,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("user disabled notification")
             }}
         )
+        application.registerForRemoteNotifications()
         return true
     }
     // MARK: UISceneSession Lifecycle
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data){
+        print("successful get the device token")
+        print(deviceToken)
+    }
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data){
+        print("fail to get the device token")
+    }
 
     @available(iOS 13.0, *)
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {

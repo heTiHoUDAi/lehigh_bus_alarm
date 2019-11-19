@@ -66,11 +66,14 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         let center:CLLocation = CLLocation(latitude: 40.600174, longitude: -75.374135)
         let currentRegion:MKCoordinateRegion = MKCoordinateRegion(center: center.coordinate, span: currentLocationSpan)
         
+        let screenSize = self.view.bounds
+        let viewWidth = screenSize.width
+        let viewHeight = screenSize.height
         self.mainMapView.setRegion(currentRegion, animated: true)
-        let leftMargin:CGFloat = 10
-        let topMargin:CGFloat = 94
-        let mapWidth:CGFloat = 343
-        let mapHeight:CGFloat = 532
+        let leftMargin:CGFloat = 0.01*viewWidth//10
+        let topMargin:CGFloat = 0.15*viewHeight//94
+        let mapWidth:CGFloat = 0.98*viewWidth//343
+        let mapHeight:CGFloat = 0.80*viewHeight//532
         
         self.mainMapView.frame = CGRect(x: leftMargin, y: topMargin, width: mapWidth, height: mapHeight)
         // show all annotation
@@ -123,7 +126,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         polylineView.fillColor = UIColor.green
         return polylineView
     }
-    
     
     func setupProgrammaticDrawerView() -> DrawerView {
         // Create the drawer programmatically.
