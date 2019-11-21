@@ -10,6 +10,9 @@ import UIKit
 import UserNotifications
 import AudioToolbox
 
+// a global variable saving the apple token
+var appleTokenForThisApp : [Data] = []
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -32,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: UISceneSession Lifecycle
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data){
         print("successful get the device token")
+        appleTokenForThisApp.append(deviceToken)
         print(deviceToken)
     }
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data){

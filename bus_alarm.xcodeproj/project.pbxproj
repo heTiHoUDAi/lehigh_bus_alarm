@@ -17,6 +17,7 @@
 		011828B9237E139600CC21E2 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 011828B8237E139600CC21E2 /* MapKit.framework */; };
 		011828BB237E376C00CC21E2 /* busClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011828BA237E376C00CC21E2 /* busClass.swift */; };
 		014A847923836BB30016F740 /* CustomPolyLineRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014A847823836BB30016F740 /* CustomPolyLineRender.swift */; };
+		014A847F2386190C0016F740 /* JsonPackageToServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014A847E2386190C0016F740 /* JsonPackageToServer.swift */; };
 		8649C6E93C018E3F345D33C2 /* Pods_bus_alarm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E77C8B05F4204A0BF99999 /* Pods_bus_alarm.framework */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +35,7 @@
 		011828BA237E376C00CC21E2 /* busClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = busClass.swift; sourceTree = "<group>"; };
 		014A847823836BB30016F740 /* CustomPolyLineRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPolyLineRender.swift; sourceTree = "<group>"; };
 		014A847A238386600016F740 /* bus_alarm.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = bus_alarm.entitlements; sourceTree = "<group>"; };
+		014A847E2386190C0016F740 /* JsonPackageToServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonPackageToServer.swift; sourceTree = "<group>"; };
 		4501BDA4F2AA5D16CF58BCCD /* Pods-bus_alarm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bus_alarm.release.xcconfig"; path = "Target Support Files/Pods-bus_alarm/Pods-bus_alarm.release.xcconfig"; sourceTree = "<group>"; };
 		62E77C8B05F4204A0BF99999 /* Pods_bus_alarm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_bus_alarm.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA6F28AEFA56FED663BF10F2 /* Pods-bus_alarm.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bus_alarm.debug.xcconfig"; path = "Target Support Files/Pods-bus_alarm/Pods-bus_alarm.debug.xcconfig"; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				011828B0237D0E8B00CC21E2 /* Info.plist */,
 				011828BA237E376C00CC21E2 /* busClass.swift */,
 				014A847823836BB30016F740 /* CustomPolyLineRender.swift */,
+				014A847E2386190C0016F740 /* JsonPackageToServer.swift */,
 			);
 			path = bus_alarm;
 			sourceTree = "<group>";
@@ -224,6 +227,7 @@
 				011828A7237D0E8700CC21E2 /* ViewController.swift in Sources */,
 				011828BB237E376C00CC21E2 /* busClass.swift in Sources */,
 				014A847923836BB30016F740 /* CustomPolyLineRender.swift in Sources */,
+				014A847F2386190C0016F740 /* JsonPackageToServer.swift in Sources */,
 				011828A3237D0E8700CC21E2 /* AppDelegate.swift in Sources */,
 				011828B7237D0FFD00CC21E2 /* CustomTableViewCell.swift in Sources */,
 				011828A5237D0E8700CC21E2 /* SceneDelegate.swift in Sources */,

@@ -24,6 +24,8 @@ struct busstation {
     var parkard_dir_next = ""
 }
 
+var remoteServerIP = "13.82.222.199:5000"
+
 class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate,CLLocationManagerDelegate{
     
     var timer_count = 0
@@ -90,7 +92,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         locationManager.delegate = self
         locationManager.allowsBackgroundLocationUpdates = true
         
-        // add map tapping function
+        // add map tapping functionweb
         let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleTap))
         gestureRecognizer.minimumPressDuration = 0.7
         gestureRecognizer.delegate = self
@@ -389,6 +391,9 @@ extension ViewController: UITableViewDelegate {
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
                 self.presentedViewController?.dismiss(animated: false, completion: nil)
             }
+            // send json data to the remote server
+
+            
         }else{
             let alertController = UIAlertController(title:"Reset alarm to "+track_target.name, message: nil, preferredStyle: .alert)
             self.present(alertController, animated: true, completion: nil)
