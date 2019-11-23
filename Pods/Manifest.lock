@@ -1,20 +1,24 @@
 PODS:
+  - Alamofire (5.0.0-rc.3)
   - DrawerView (1.2.2)
   - SwiftyJSON (4.3.0)
 
 DEPENDENCIES:
+  - Alamofire (~> 5.0.0-rc.3)
   - DrawerView
   - SwiftyJSON (~> 4.0)
 
 SPEC REPOS:
   trunk:
+    - Alamofire
     - DrawerView
     - SwiftyJSON
 
 SPEC CHECKSUMS:
+  Alamofire: ca8c0de6906873be89d6deec5c8de279e00bf872
   DrawerView: 0870f61b8aabc17c01b3095afd3b5189befa7a93
   SwiftyJSON: 6faa0040f8b59dead0ee07436cbf76b73c08fd08
 
-PODFILE CHECKSUM: ebcb1874e104294f79ec84c8a39f459c75028d19
+PODFILE CHECKSUM: 462307e455bac955d5081f617dc961b2dc1f815b
 
 COCOAPODS: 1.8.4

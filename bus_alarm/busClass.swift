@@ -46,6 +46,7 @@ class busClass {
         busAnnotation.coordinate = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).coordinate
         self.lat = coordinate.latitude
         self.long = coordinate.longitude
+        self.name = name
         busAnnotation.title = name
         busAnnotation.subtitle = String(self.fleetnum)
         mapview.addAnnotation(busAnnotation)

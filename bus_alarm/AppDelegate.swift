@@ -9,6 +9,7 @@
 import UIKit
 import UserNotifications
 import AudioToolbox
+import SwiftyJSON
 
 // a global variable saving the apple token
 var appleTokenForThisApp : [Data] = []
@@ -38,6 +39,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         appleTokenForThisApp.append(deviceToken)
         print(deviceToken)
     }
+    
+    // receive notification
+    // when app is frontground. the push notification will not be trigger
+    // so when we have push notification, this function provide a self define notification.
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult)->Void){
+        print("received \(userInfo)")
+        let json = JSON(userInfo[AnyHashable("aps")])
+        let alertController = UIAlertController(title: json["alert"].string, message: nil, preferredStyle: .alert)
+        
+        self.window?.rootViewController?.present(alertController, animated: true, completion: nil)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
+            self.window?.rootViewController?.presentedViewController?.dismiss(animated: false, completion: nil)
+        }
+    }
+    
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data){
         print("fail to get the device token")
     }
@@ -67,4 +85,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
-

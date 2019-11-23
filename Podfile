@@ -6,6 +6,7 @@ target 'bus_alarm' do
   use_frameworks!
   pod 'SwiftyJSON', '~> 4.0'
   pod 'DrawerView'
+  pod 'Alamofire', '~>5.0.0-rc.3' 
   # Pods for bus_alarm
 
 end

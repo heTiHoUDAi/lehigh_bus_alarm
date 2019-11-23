@@ -17,8 +17,10 @@ import UserNotifications
 import Foundation
 
 struct busstation {
-    var lag = 0.0
+    var busHasVisited = false
+    var lat = 0.0
     var long = 0.0
+    var uniqueKey = ""
     var name = ""
     var sacu_dir_next = ""
     var parkard_dir_next = ""
@@ -42,7 +44,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     var current_bus: [busClass] = []
     var bus_annotation: [MKPointAnnotation] = []
     var start_to_track = false
-    var track_target = busstation(lag: 0, long: 0, name : "", sacu_dir_next : "", parkard_dir_next : "")
+    var track_target : [busstation] = []
     var current_custom_choice: [busClass] = []
     var polylineCCRoute : [MKPolyline] = []
     
@@ -82,7 +84,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         GCD_timer_callback()
         
         initalBusStation()
-        setupCCRouteOverlay()
+        // setupCCRouteOverlay()
         
         // init drawer
         drawerView = setupProgrammaticDrawerView()
@@ -110,7 +112,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         let coordinate = self.mainMapView.convert(location, toCoordinateFrom: self.mainMapView)
         if (gestureRecognizer.state == .ended){
             print("adding custom pin")
-            self.current_custom_choice.append(busClass(name: "Custom Location"+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
+            self.current_custom_choice.append(busClass(name: "Custom Location "+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
         }
     }
     
@@ -223,91 +225,62 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
                 }
             }
         }
-        var bus_arrived = false
-        if (start_to_track == true){ // start to track
-            for bus in self.current_bus { // for every bus
-                if (currentlyTappedBusFleetNum != nil){ // has the fleet num as set
-                    if bus.fleetnum == Int(currentlyTappedBusFleetNum) {
-                        if ( (bus.currentstop == track_target.name) || (bus.laststop == track_target.name) ){
-                            bus_arrived = true
-                        }
-                        let bus_location = CLLocation(latitude: bus.lat, longitude: bus.long)
-                        let distance = bus_location.distance(from: CLLocation(latitude: track_target.lag, longitude: track_target.long))
-                        if (distance < 100){
-                            bus_arrived = true
-                        }
-                        
-                    }
-                }
-            }
-        }
-        if bus_arrived == true {
-            start_to_track = false
-            let alertController = UIAlertController(title:"Bus Have Arrived", message:nil, preferredStyle: .alert)
-            self.present(alertController, animated: true, completion: nil)
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
-                self.presentedViewController?.dismiss(animated: false, completion: nil)
-            }
-            let content = UNMutableNotificationContent()
-            content.title = "Bus Arrived"
-            content.subtitle = "A compus connector bus has arrived " + track_target.name + "."
-            content.sound = UNNotificationSound.default
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-            let request = UNNotificationRequest(identifier: "bus.arrive", content: content, trigger: trigger)
-            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-            locationManager.stopUpdatingLocation()
-        }
     }
     
     @IBAction func cancellAllButton(){
-        locationManager.stopUpdatingLocation()
+        // pop a notification in app
         var alertController : UIAlertController
         if start_to_track == true {
+            track_target = [] // clear the array
             alertController = UIAlertController(title:"Cancel the appointment", message: nil, preferredStyle: .alert)
         }else{
             alertController = UIAlertController(title:"No appointment scheduled", message: nil, preferredStyle: .alert)
         }
+        // run this pop in other thread
         self.present(alertController, animated: true, completion: nil)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
             self.presentedViewController?.dismiss(animated: false, completion: nil)
         }
+        // send a all clear command to the remote server
         start_to_track = false
+        var emptyBus: [busstation] = [busstation()]
+        let json = JsonPackageToServer.packageJson(fleetnum: 0, command: "CancelAppoinment", locationUserWant: &emptyBus)
+        JsonPackageToServer.sendJsonToServer(json: json)
     }
     
     func initalBusStation(){
         // all bus-station
-        all_bus_station.append(busstation(lag: 40.602185, long: -75.358352, name : "Iacocca C Wing", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.601918, long: -75.360385, name: "Iacocca Hall", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.604164, long: -75.361237, name: "ATLSS", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.599815, long: -75.362966, name: "Building C", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append(busstation(lag: 40.599839, long: -75.365485, name : "Jordan Hall", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.603105, long: -75.375352, name: "Alpha Tau Omega", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.602295, long: -75.376625, name: "Alpha Phi", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.602018, long: -75.379275, name: "House 93", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append(busstation(lag: 40.602979, long: -75.380922, name : "Sigma Phi Epsilon", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.603603, long: -75.379039, name: "Pi Beta Phi", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.604059, long: -75.377000, name: "Gamma Phi Beta", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.605138, long: -75.378926, name: "Taylor College", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append(busstation(lag: 40.605562, long: -75.377499, name : "Drown Hall", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.607011, long: -75.381029, name: "Alumni Memorial Building", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.608205, long: -75.379624, name: "Steps", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.609812, long: -75.378367, name: "Farrington Square", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append(busstation(lag: 40.611466, long: -75.378517, name : "SouthSide", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.608383, long: -75.375737, name: "Whitaker Lab", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.606945, long: -75.374846, name: "Williams Hall", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append( busstation(lag: 40.585807, long: -75.358557, name: "Stabler Arena", sacu_dir_next: "", parkard_dir_next: "") )
-        all_bus_station.append(busstation(lag: 40.586118, long: -75.355045, name : "Goodman Campus", sacu_dir_next : "", parkard_dir_next : ""))
-        all_bus_station.append( busstation(lag: 40.579414, long: -75.355351, name: "Saucon Village", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.602185, long: -75.358352, name : "Iacocca C Wing", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.601918, long: -75.360385, name: "Iacocca Hall", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.604164, long: -75.361237, name: "ATLSS", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.599815, long: -75.362966, name: "Building C", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.599839, long: -75.365485, name : "Jordan Hall", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.603105, long: -75.375352, name: "Alpha Tau Omega", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.602295, long: -75.376625, name: "Alpha Phi", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.602018, long: -75.379275, name: "House 93", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.602979, long: -75.380922, name : "Sigma Phi Epsilon", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.603603, long: -75.379039, name: "Pi Beta Phi", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.604059, long: -75.377000, name: "Gamma Phi Beta", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.605138, long: -75.378926, name: "Taylor College", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.605562, long: -75.377499, name : "Drown Hall", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.607011, long: -75.381029, name: "Alumni Memorial Building", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.608205, long: -75.379624, name: "Steps", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.609812, long: -75.378367, name: "Farrington Square", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.611466, long: -75.378517, name : "SouthSide", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.608383, long: -75.375737, name: "Whitaker Lab", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.606945, long: -75.374846, name: "Williams Hall", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append( busstation(lat: 40.585807, long: -75.358557, name: "Stabler Arena", sacu_dir_next: "", parkard_dir_next: "") )
+        all_bus_station.append(busstation(lat: 40.586118, long: -75.355045, name : "Goodman Campus", sacu_dir_next : "", parkard_dir_next : ""))
+        all_bus_station.append( busstation(lat: 40.579414, long: -75.355351, name: "Saucon Village", sacu_dir_next: "", parkard_dir_next: "") )
         for bus in all_bus_station{
             let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocation(latitude: bus.lag, longitude:    bus.long).coordinate
+            annotation.coordinate = CLLocation(latitude: bus.lat, longitude:    bus.long).coordinate
             annotation.title = bus.name
             busStationAnnotation.append(annotation)
         }
     }
-    
-    
 }
+
 extension ViewController: DrawerViewDelegate{
     
     func drawer(_ drawerView: DrawerView, willTransitionFrom startPosition: DrawerPosition, to targetPosition: DrawerPosition) {
@@ -341,8 +314,6 @@ extension ViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return all_bus_station.count+current_custom_choice.count
     }
-    
-    
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") ?? UITableViewCell(style: .default, reuseIdentifier: "Cell")
@@ -351,7 +322,7 @@ extension ViewController: UITableViewDataSource {
             cell.textLabel?.text = all_bus_station[indexPath.row].name
         }else{
             if indexPath.row < current_custom_choice.count {
-                cell.textLabel?.text = "Custom Location "+String(indexPath.row)
+                cell.textLabel?.text = "Custom Location "+String(indexPath.row+1)
             }else{
                 cell.textLabel?.text = all_bus_station[indexPath.row - current_custom_choice.count ].name
             }
@@ -363,46 +334,40 @@ extension ViewController: UITableViewDataSource {
 
 extension ViewController: UITableViewDelegate {
     
-
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        // make the drawer go back
         drawerView?.setPosition(.closed, animated: true)
-        //drawers[3].drawer?.setPosition(.partiallyOpen, animated: true)
-        locationManager.startUpdatingLocation()
+        // if there is no custom location
         if (current_custom_choice.count == 0){
-            track_target.name = all_bus_station[indexPath.row].name
-            track_target.lag = all_bus_station[indexPath.row].lag
-            track_target.long = all_bus_station[indexPath.row].long
-        }else{
+            let uniqueKey = all_bus_station[indexPath.row].name+String(Int(all_bus_station[indexPath.row].lat*1000000))+String(Int(all_bus_station[indexPath.row].long*1000000))
+            track_target.append(busstation(lat: all_bus_station[indexPath.row].lat, long: all_bus_station[indexPath.row].long, uniqueKey: uniqueKey, name: all_bus_station[indexPath.row].name))
+        }else{// if there is custom location and we tap a custom one
             if (indexPath.row < current_custom_choice.count){
-                track_target.name = current_custom_choice[indexPath.row].name
-                track_target.lag = current_custom_choice[indexPath.row].lat
-                track_target.long = current_custom_choice[indexPath.row].long
-            }else{
-                track_target.name = all_bus_station[indexPath.row - current_custom_choice.count].name
-                track_target.lag = all_bus_station[indexPath.row - current_custom_choice.count].lag
-                track_target.long = all_bus_station[indexPath.row - current_custom_choice.count].long
+                let uniqueKey = current_custom_choice[indexPath.row].name+String(Int(current_custom_choice[indexPath.row].lat*1000000))+String(Int(current_custom_choice[indexPath.row].long*1000000))
+                track_target.append(busstation( lat: current_custom_choice[indexPath.row].lat, long: current_custom_choice[indexPath.row].long, uniqueKey: uniqueKey, name: current_custom_choice[indexPath.row].name))
+            }else{//if we tap a preset one
+                let uniqueKey = all_bus_station[indexPath.row - current_custom_choice.count].name+String(Int(all_bus_station[indexPath.row - current_custom_choice.count].lat*1000000))+String(Int(all_bus_station[indexPath.row - current_custom_choice.count].long*1000000))
+                track_target.append(busstation(lat: all_bus_station[indexPath.row - current_custom_choice.count].lat, long: all_bus_station[indexPath.row - current_custom_choice.count].long, uniqueKey: uniqueKey, name: all_bus_station[indexPath.row - current_custom_choice.count].name))
             }
         }
-        if (start_to_track == false){
-            let alertController = UIAlertController(title:"Will alarm when bus arrive/close to "+track_target.name, message: nil, preferredStyle: .alert)
+        if track_target.count <= 5 {
+            // send json to server to set this notification
+            let jsonToServer = JsonPackageToServer.packageJson(fleetnum: Int(currentlyTappedBusFleetNum) ?? 0, command: "trackBus", locationUserWant: &track_target)
+            JsonPackageToServer.sendJsonToServer(json: jsonToServer)
+            //        if (start_to_track == false){
+            let alertController = UIAlertController(title:"Will alarm when bus arrive/close to selected location", message: nil, preferredStyle: .alert)
             self.present(alertController, animated: true, completion: nil)
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
                 self.presentedViewController?.dismiss(animated: false, completion: nil)
             }
-            // send json data to the remote server
-
-            
         }else{
-            let alertController = UIAlertController(title:"Reset alarm to "+track_target.name, message: nil, preferredStyle: .alert)
+            let alertController = UIAlertController(title:"Can not select locations for more than 5", message: nil, preferredStyle: .alert)
             self.present(alertController, animated: true, completion: nil)
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
                 self.presentedViewController?.dismiss(animated: false, completion: nil)
             }
         }
-        start_to_track = true
-    
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
