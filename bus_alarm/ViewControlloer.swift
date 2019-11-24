@@ -84,13 +84,9 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         // show all annotation
         GCD_timer_callback()
         initalBusStation()
-        // setupCCRouteOverlay()
+        setupCCRouteOverlay()
         // init drawer
         drawerView = setupProgrammaticDrawerView()
-        //get your location
-        locationManager.requestAlwaysAuthorization()
-        locationManager.delegate = self
-        locationManager.allowsBackgroundLocationUpdates = true
         
         // add map tapping functionweb
         let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleTap))
@@ -113,17 +109,21 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     }
     
     func setupCCRouteOverlay(){
-        let polylineCoor = [CLLocationCoordinate2D(latitude: 40.602185, longitude: -75.358352), CLLocationCoordinate2D(latitude: 40.601918, longitude: -75.360385)]
-        let polyline = MKPolyline(coordinates: polylineCoor, count: 2)
-        
-        self.polylineCCRoute.append(polyline)
+        for ii in 0...CCRouteData.data.count-1 {
+            let polylineCoor = CCRouteData.data[ii]
+            let polyline = MKPolyline(coordinates: polylineCoor, count: CCRouteData.data[ii].count)
+            self.polylineCCRoute.append(polyline)
+        }
         self.mainMapView.addOverlays(polylineCCRoute)
     }
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-        let polylineView = MKPolylineRenderer(overlay: overlay)
-        polylineView.strokeColor = UIColor.green
-        polylineView.fillColor = UIColor.green
+//        let polylineView = MKPolylineRenderer(overlay: overlay)
+        let polylineView = RouteOverlayRenderer(overlay: overlay)
+        polylineView.strokeColor = UIColor.brown
+        polylineView.fillColor = UIColor.brown
+        polylineView.alpha = 0.4
+        polylineView.lineWidth = 10
         return polylineView
     }
     
@@ -169,7 +169,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     // change the annotation style
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let annotationTitle = annotation.title as! String
-        print(annotationTitle)
+        // print(annotationTitle)
         var view: MKMarkerAnnotationView
         if annotationTitle.prefix(5) == "Alarm" {
             let identifier = "Alarm"
@@ -197,7 +197,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         
     @objc func GCD_timer_callback(){
         timer_count += 1
-        print("timer_trigger"+String(timer_count))
+//        print("timer_trigger"+String(timer_count))
         let url = URL(string: "https://bus.lehigh.edu/scripts/busdata.php?format=json")!
         let task = URLSession.shared.dataTask(with: url) {data, response, error in
             let dataout = data
