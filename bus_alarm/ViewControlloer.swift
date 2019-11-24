@@ -47,6 +47,9 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     var track_target : [busstation] = []
     var current_custom_choice: [busClass] = []
     var polylineCCRoute : [MKPolyline] = []
+    // save the indices in the table view which are selected.
+    var selectedIndices : [Int] = []
+    var targetAnnotation: [MKPointAnnotation] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,10 +62,8 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         
         self.mainMapView = MKMapView(frame:self.view.frame)
         self.view.addSubview(self.mainMapView)
-        
         self.mainMapView.mapType = MKMapType.standard
         self.mainMapView.delegate = self
-        
         let latDelta = 0.05
         let longDelta = 0.05
         let currentLocationSpan:MKCoordinateSpan = MKCoordinateSpan(latitudeDelta: latDelta,longitudeDelta: longDelta)
@@ -82,13 +83,10 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         self.mainMapView.frame = CGRect(x: leftMargin, y: topMargin, width: mapWidth, height: mapHeight)
         // show all annotation
         GCD_timer_callback()
-        
         initalBusStation()
         // setupCCRouteOverlay()
-        
         // init drawer
         drawerView = setupProgrammaticDrawerView()
-        
         //get your location
         locationManager.requestAlwaysAuthorization()
         locationManager.delegate = self
@@ -99,8 +97,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         gestureRecognizer.minimumPressDuration = 0.7
         gestureRecognizer.delegate = self
         self.mainMapView.addGestureRecognizer(gestureRecognizer)
-        
-        
     }
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
@@ -147,6 +143,8 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         self.tableView.rightAnchor.constraint(equalTo: drawerView.rightAnchor).isActive = true
         self.tableView.delegate = self
         self.tableView.dataSource = self
+        self.tableView.allowsMultipleSelection = true
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         
         return drawerView
     }
@@ -155,23 +153,47 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView){
         print("mapView tapped!"+String(current_custom_choice.count))
         self.tableView.reloadData()
-        if (self.current_custom_choice.count != 0){
-            
-            let localAnnotation = view.annotation!
-            let str = localAnnotation.title ?? "default"
-            let substr = str?.prefix(6)
-            if substr == "Custom"{
-                // do nothing
-                print("tap custom pin")
-            }else{
-                currentlyTappedBusFleetNum = view.annotation?.subtitle! ?? ""
-                drawerView.setPosition(.open, animated: true)
-            }
-        }else{
+        
+        let locationAnnotation = view.annotation!
+        let str = locationAnnotation.title ?? "default"
+        let substr = str?.prefix(6)
+        
+        if substr == "Custom" || substr == "Alarm " {
+            print("tap custom pin")
+        } else {
             currentlyTappedBusFleetNum = view.annotation?.subtitle! ?? ""
             drawerView.setPosition(.open, animated: true)
         }
     }
+    
+    // change the annotation style
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let annotationTitle = annotation.title as! String
+        print(annotationTitle)
+        var view: MKMarkerAnnotationView
+        if annotationTitle.prefix(5) == "Alarm" {
+            let identifier = "Alarm"
+            if let dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
+                dequeuedView.annotation = annotation
+                view = dequeuedView
+            } else {
+                view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                view.markerTintColor = UIColor.blue
+            }
+        } else {
+            let identifier = "Default"
+            if let dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
+                dequeuedView.annotation = annotation
+                view = dequeuedView
+            } else {
+                view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+            }
+        }
+        return view
+    }
+    
+    // change the color of the annotation if this is target location
+    
         
     @objc func GCD_timer_callback(){
         timer_count += 1
@@ -230,19 +252,18 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     @IBAction func cancellAllButton(){
         // pop a notification in app
         var alertController : UIAlertController
-        if start_to_track == true {
-            track_target = [] // clear the array
-            alertController = UIAlertController(title:"Cancel the appointment", message: nil, preferredStyle: .alert)
-        }else{
-            alertController = UIAlertController(title:"No appointment scheduled", message: nil, preferredStyle: .alert)
-        }
+
+        alertController = UIAlertController(title:"Cancel the appointment", message: nil, preferredStyle: .alert)
         // run this pop in other thread
         self.present(alertController, animated: true, completion: nil)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
             self.presentedViewController?.dismiss(animated: false, completion: nil)
         }
         // send a all clear command to the remote server
-        start_to_track = false
+        track_target = []
+        self.mainMapView.removeAnnotations(self.targetAnnotation)
+        self.targetAnnotation = []
+        // a fake bus information.
         var emptyBus: [busstation] = [busstation()]
         let json = JsonPackageToServer.packageJson(fleetnum: 0, command: "CancelAppoinment", locationUserWant: &emptyBus)
         JsonPackageToServer.sendJsonToServer(json: json)
@@ -289,6 +310,11 @@ extension ViewController: DrawerViewDelegate{
 
     func drawer(_ drawerView: DrawerView, didTransitionTo position: DrawerPosition) {
         print("drawerView(_:didTransitionTo: \(position))")
+        print(track_target.count)
+        if position == .closed {
+            self.track_target.removeAll()
+        }
+        print(track_target.count)
     }
 
     func drawerWillBeginDragging(_ drawerView: DrawerView) {
@@ -316,18 +342,33 @@ extension ViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        // get the cell type.
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") ?? UITableViewCell(style: .default, reuseIdentifier: "Cell")
         
-        if ( current_custom_choice.count == 0 ){
-            cell.textLabel?.text = all_bus_station[indexPath.row].name
+        // The first column is make sure
+        if indexPath.row == 0 {
+            cell.textLabel?.textAlignment = .center
+            cell.textLabel?.text = "Set selected alarm"
+            cell.backgroundColor = UIColor.red
         }else{
-            if indexPath.row < current_custom_choice.count {
-                cell.textLabel?.text = "Custom Location "+String(indexPath.row+1)
+            if ( current_custom_choice.count == 0 ){
+                cell.textLabel?.text = all_bus_station[indexPath.row-1].name
             }else{
-                cell.textLabel?.text = all_bus_station[indexPath.row - current_custom_choice.count ].name
+                if indexPath.row-1 < current_custom_choice.count {
+                    cell.textLabel?.text = "Custom Location "+String(indexPath.row+1-1)
+                }else{
+                    cell.textLabel?.text = all_bus_station[indexPath.row - 1 - current_custom_choice.count ].name
+                }
             }
+            cell.backgroundColor = UIColor.clear
         }
-        cell.backgroundColor = UIColor.clear
+        if tableView.indexPathsForSelectedRows?.index(of: indexPath) != nil{
+            cell.accessoryType = .checkmark
+        }else{
+            cell.accessoryType = .none
+        }
+        
         return cell
     }
 }
@@ -335,37 +376,112 @@ extension ViewController: UITableViewDataSource {
 extension ViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        // make the drawer go back
-        drawerView?.setPosition(.closed, animated: true)
-        // if there is no custom location
-        if (current_custom_choice.count == 0){
-            let uniqueKey = all_bus_station[indexPath.row].name+String(Int(all_bus_station[indexPath.row].lat*1000000))+String(Int(all_bus_station[indexPath.row].long*1000000))
-            track_target.append(busstation(lat: all_bus_station[indexPath.row].lat, long: all_bus_station[indexPath.row].long, uniqueKey: uniqueKey, name: all_bus_station[indexPath.row].name))
-        }else{// if there is custom location and we tap a custom one
-            if (indexPath.row < current_custom_choice.count){
-                let uniqueKey = current_custom_choice[indexPath.row].name+String(Int(current_custom_choice[indexPath.row].lat*1000000))+String(Int(current_custom_choice[indexPath.row].long*1000000))
-                track_target.append(busstation( lat: current_custom_choice[indexPath.row].lat, long: current_custom_choice[indexPath.row].long, uniqueKey: uniqueKey, name: current_custom_choice[indexPath.row].name))
-            }else{//if we tap a preset one
-                let uniqueKey = all_bus_station[indexPath.row - current_custom_choice.count].name+String(Int(all_bus_station[indexPath.row - current_custom_choice.count].lat*1000000))+String(Int(all_bus_station[indexPath.row - current_custom_choice.count].long*1000000))
-                track_target.append(busstation(lat: all_bus_station[indexPath.row - current_custom_choice.count].lat, long: all_bus_station[indexPath.row - current_custom_choice.count].long, uniqueKey: uniqueKey, name: all_bus_station[indexPath.row - current_custom_choice.count].name))
+        
+        let cell = self.tableView.cellForRow(at: indexPath)
+        
+        if indexPath.row != 0 {
+            // adding cell
+            cell?.accessoryType = .checkmark
+            // adding the current tapped selection to the
+            // if there is no custom location
+            if (current_custom_choice.count == 0){
+                let arrayIndex = indexPath.row - 1
+                let uniqueKey = all_bus_station[arrayIndex].name+String(Int(all_bus_station[arrayIndex].lat*1000000))+String(Int(all_bus_station[arrayIndex].long*1000000))
+                track_target.append(busstation(lat: all_bus_station[arrayIndex].lat, long: all_bus_station[arrayIndex].long, uniqueKey: uniqueKey, name: all_bus_station[arrayIndex].name))
+            }else{// if there is custom location and we tap a custom one
+                if (indexPath.row-1 < current_custom_choice.count){
+                    let arrayIndex = indexPath.row-1
+                    let uniqueKey = current_custom_choice[arrayIndex].name+String(Int(current_custom_choice[arrayIndex].lat*1000000))+String(Int(current_custom_choice[arrayIndex].long*1000000))
+                    track_target.append(busstation( lat: current_custom_choice[arrayIndex].lat, long: current_custom_choice[arrayIndex].long, uniqueKey: uniqueKey, name: current_custom_choice[arrayIndex].name))
+                }else{//if we tap a preset one
+                    let arrayIndex = indexPath.row - current_custom_choice.count - 1
+                    let uniqueKey = all_bus_station[arrayIndex].name+String(Int(all_bus_station[arrayIndex].lat*1000000))+String(Int(all_bus_station[arrayIndex].long*1000000))
+                    track_target.append(busstation(lat: all_bus_station[arrayIndex].lat, long: all_bus_station[arrayIndex].long, uniqueKey: uniqueKey, name: all_bus_station[arrayIndex].name))
+                }
+            }
+        } else {
+            if track_target.count <= 5 {
+                // users tap the confirm button
+                // make the drawer go back
+                drawerView?.setPosition(.closed, animated: true)
+                // send json to server to set this notification
+                let jsonToServer = JsonPackageToServer.packageJson(fleetnum: Int(currentlyTappedBusFleetNum) ?? 0, command: "trackBus", locationUserWant: &track_target)
+                JsonPackageToServer.sendJsonToServer(json: jsonToServer)
+                //        if (start_to_track == false){
+                let alertController = UIAlertController(title:"Will alarm when bus arrive/close to selected location", message: nil, preferredStyle: .alert)
+                self.present(alertController, animated: true, completion: nil)
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
+                    self.presentedViewController?.dismiss(animated: false, completion: nil)
+                }
+                // add target annotation
+                DispatchQueue.main.async {
+                    var count = 1
+                    if self.targetAnnotation.isEmpty {
+                        for target in self.track_target {
+                            let annotation = MKPointAnnotation()
+                            annotation.coordinate = CLLocation(latitude: target.lat, longitude: target.long).coordinate
+                            annotation.title = "Alarm "+String(count)
+                            self.targetAnnotation.append(annotation)
+                            count += 1
+                            }
+                    } else {
+                        self.mainMapView.removeAnnotations(self.targetAnnotation)
+                        for target in self.track_target {
+                            let annotation = MKPointAnnotation()
+                            annotation.coordinate = CLLocation(latitude: target.lat, longitude: target.long).coordinate
+                            annotation.title = "Alarm "+String(count)
+                            self.targetAnnotation.append(annotation)
+                            count += 1
+                        }
+                    }
+                    self.mainMapView.addAnnotations(self.targetAnnotation)
+                }
+                
+            }else{
+                // can't select more than 5 locations
+                let alertController = UIAlertController(title:"Can not select locations for more than 5 (selected or selecting), please do it again", message: nil, preferredStyle: .alert)
+                self.present(alertController, animated: true, completion: nil)
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+1){
+                    self.presentedViewController?.dismiss(animated: false, completion: nil)
+                }
+                // make the drawer go back
+                drawerView?.setPosition(.closed, animated: true)
             }
         }
-        if track_target.count <= 5 {
-            // send json to server to set this notification
-            let jsonToServer = JsonPackageToServer.packageJson(fleetnum: Int(currentlyTappedBusFleetNum) ?? 0, command: "trackBus", locationUserWant: &track_target)
-            JsonPackageToServer.sendJsonToServer(json: jsonToServer)
-            //        if (start_to_track == false){
-            let alertController = UIAlertController(title:"Will alarm when bus arrive/close to selected location", message: nil, preferredStyle: .alert)
-            self.present(alertController, animated: true, completion: nil)
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
-                self.presentedViewController?.dismiss(animated: false, completion: nil)
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = self.tableView.cellForRow(at: indexPath)
+        cell?.accessoryType = .none
+        // want to remove a cell
+        if (current_custom_choice.count == 0){
+            let arrayIndex = indexPath.row - 1
+            let uniqueKey = all_bus_station[arrayIndex].name+String(Int(all_bus_station[arrayIndex].lat*1000000))+String(Int(all_bus_station[arrayIndex].long*1000000))
+            for ii in 0...track_target.count-1 {
+                if track_target[ii].uniqueKey == uniqueKey {
+                    track_target.remove(at: ii)
+                    break
+                }
             }
-        }else{
-            let alertController = UIAlertController(title:"Can not select locations for more than 5", message: nil, preferredStyle: .alert)
-            self.present(alertController, animated: true, completion: nil)
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
-                self.presentedViewController?.dismiss(animated: false, completion: nil)
+        }else{// if there is custom location and we tap a custom one
+            if (indexPath.row-1 < current_custom_choice.count){
+                let arrayIndex = indexPath.row-1
+                let uniqueKey = current_custom_choice[arrayIndex].name+String(Int(current_custom_choice[arrayIndex].lat*1000000))+String(Int(current_custom_choice[arrayIndex].long*1000000))
+                for ii in 0...track_target.count-1 {
+                    if track_target[ii].uniqueKey == uniqueKey {
+                        track_target.remove(at: ii)
+                        break
+                    }
+                }
+            }else{//if we tap a preset one
+                let arrayIndex = indexPath.row - current_custom_choice.count - 1
+                let uniqueKey = all_bus_station[arrayIndex].name+String(Int(all_bus_station[arrayIndex].lat*1000000))+String(Int(all_bus_station[arrayIndex].long*1000000))
+                for ii in 0...track_target.count-1 {
+                    if track_target[ii].uniqueKey == uniqueKey {
+                        track_target.remove(at: ii)
+                        break
+                    }
+                }
             }
         }
     }

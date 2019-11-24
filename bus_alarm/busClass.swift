@@ -72,4 +72,3 @@ class busClass {
         //mapview.addAnnotation(busAnnotation)
     }
 }
-

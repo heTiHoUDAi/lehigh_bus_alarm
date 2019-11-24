@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		011828A3237D0E8700CC21E2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011828A2237D0E8700CC21E2 /* AppDelegate.swift */; };
 		011828A5237D0E8700CC21E2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011828A4237D0E8700CC21E2 /* SceneDelegate.swift */; };
-		011828A7237D0E8700CC21E2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011828A6237D0E8700CC21E2 /* ViewController.swift */; };
 		011828AA237D0E8700CC21E2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 011828A8237D0E8700CC21E2 /* Main.storyboard */; };
 		011828AC237D0E8B00CC21E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 011828AB237D0E8B00CC21E2 /* Assets.xcassets */; };
 		011828AF237D0E8B00CC21E2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 011828AD237D0E8B00CC21E2 /* LaunchScreen.storyboard */; };
@@ -18,6 +17,7 @@
 		011828BB237E376C00CC21E2 /* busClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011828BA237E376C00CC21E2 /* busClass.swift */; };
 		014A847923836BB30016F740 /* CustomPolyLineRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014A847823836BB30016F740 /* CustomPolyLineRender.swift */; };
 		014A847F2386190C0016F740 /* JsonPackageToServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014A847E2386190C0016F740 /* JsonPackageToServer.swift */; };
+		019E43F22389D53E0009BB97 /* ViewControlloer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 019E43F12389D53E0009BB97 /* ViewControlloer.swift */; };
 		8649C6E93C018E3F345D33C2 /* Pods_bus_alarm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E77C8B05F4204A0BF99999 /* Pods_bus_alarm.framework */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +25,6 @@
 		0118289F237D0E8700CC21E2 /* bus_alarm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bus_alarm.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		011828A2237D0E8700CC21E2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		011828A4237D0E8700CC21E2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		011828A6237D0E8700CC21E2 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		011828A9237D0E8700CC21E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		011828AB237D0E8B00CC21E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		011828AE237D0E8B00CC21E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -36,6 +35,7 @@
 		014A847823836BB30016F740 /* CustomPolyLineRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPolyLineRender.swift; sourceTree = "<group>"; };
 		014A847A238386600016F740 /* bus_alarm.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = bus_alarm.entitlements; sourceTree = "<group>"; };
 		014A847E2386190C0016F740 /* JsonPackageToServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonPackageToServer.swift; sourceTree = "<group>"; };
+		019E43F12389D53E0009BB97 /* ViewControlloer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControlloer.swift; sourceTree = "<group>"; };
 		4501BDA4F2AA5D16CF58BCCD /* Pods-bus_alarm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bus_alarm.release.xcconfig"; path = "Target Support Files/Pods-bus_alarm/Pods-bus_alarm.release.xcconfig"; sourceTree = "<group>"; };
 		62E77C8B05F4204A0BF99999 /* Pods_bus_alarm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_bus_alarm.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA6F28AEFA56FED663BF10F2 /* Pods-bus_alarm.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bus_alarm.debug.xcconfig"; path = "Target Support Files/Pods-bus_alarm/Pods-bus_alarm.debug.xcconfig"; sourceTree = "<group>"; };
@@ -79,7 +79,6 @@
 				011828B6237D0FFD00CC21E2 /* CustomTableViewCell.swift */,
 				011828A2237D0E8700CC21E2 /* AppDelegate.swift */,
 				011828A4237D0E8700CC21E2 /* SceneDelegate.swift */,
-				011828A6237D0E8700CC21E2 /* ViewController.swift */,
 				011828A8237D0E8700CC21E2 /* Main.storyboard */,
 				011828AB237D0E8B00CC21E2 /* Assets.xcassets */,
 				011828AD237D0E8B00CC21E2 /* LaunchScreen.storyboard */,
@@ -87,6 +86,7 @@
 				011828BA237E376C00CC21E2 /* busClass.swift */,
 				014A847823836BB30016F740 /* CustomPolyLineRender.swift */,
 				014A847E2386190C0016F740 /* JsonPackageToServer.swift */,
+				019E43F12389D53E0009BB97 /* ViewControlloer.swift */,
 			);
 			path = bus_alarm;
 			sourceTree = "<group>";
@@ -224,11 +224,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				011828A7237D0E8700CC21E2 /* ViewController.swift in Sources */,
 				011828BB237E376C00CC21E2 /* busClass.swift in Sources */,
 				014A847923836BB30016F740 /* CustomPolyLineRender.swift in Sources */,
 				014A847F2386190C0016F740 /* JsonPackageToServer.swift in Sources */,
 				011828A3237D0E8700CC21E2 /* AppDelegate.swift in Sources */,
+				019E43F22389D53E0009BB97 /* ViewControlloer.swift in Sources */,
 				011828B7237D0FFD00CC21E2 /* CustomTableViewCell.swift in Sources */,
 				011828A5237D0E8700CC21E2 /* SceneDelegate.swift in Sources */,
 			);
