@@ -37,6 +37,9 @@ class busClass {
         if ( j["fleetnum"].string != nil ){
             self.fleetnum = Int(j["fleetnum"].string!)!
         }
+        if (j["name"].string != nil){
+            self.name = j["name"].string!;
+        }
         busAnnotation.coordinate = CLLocation(latitude: self.lat, longitude: self.long).coordinate
         busAnnotation.title = self.name
         busAnnotation.subtitle = String(self.fleetnum)

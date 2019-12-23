@@ -90,7 +90,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         
         // add map tapping functionweb
         let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleTap))
-        gestureRecognizer.minimumPressDuration = 0.7
+        gestureRecognizer.minimumPressDuration = 0.3
         gestureRecognizer.delegate = self
         self.mainMapView.addGestureRecognizer(gestureRecognizer)
     }
@@ -102,7 +102,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
     @objc func handleTap(gestureRecognizer: UITapGestureRecognizer){
         let location = gestureRecognizer.location(in: self.mainMapView)
         let coordinate = self.mainMapView.convert(location, toCoordinateFrom: self.mainMapView)
-        if (gestureRecognizer.state == .ended){
+        if (gestureRecognizer.state == .began){
             print("adding custom pin")
             self.current_custom_choice.append(busClass(name: "Custom Location "+String(current_custom_choice.count+1), coordinate: coordinate, mapview: self.mainMapView))
         }
@@ -173,20 +173,24 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         var view: MKMarkerAnnotationView
         if annotationTitle.prefix(5) == "Alarm" {
             let identifier = "Alarm"
-            if let dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
+            if var dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
                 dequeuedView.annotation = annotation
+                dequeuedView.displayPriority = .defaultHigh
                 view = dequeuedView
             } else {
                 view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                view.displayPriority = .defaultHigh
                 view.markerTintColor = UIColor.blue
             }
         } else {
             let identifier = "Default"
-            if let dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
+            if var dequeuedView = self.mainMapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView {
                 dequeuedView.annotation = annotation
+                dequeuedView.displayPriority = .defaultLow
                 view = dequeuedView
             } else {
                 view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                view.displayPriority = .defaultLow
             }
         }
         return view
@@ -208,23 +212,25 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
                     bus.used = false
                 }
                 // save only compus connector
-                for n in 0...json.count-1{
-                    if (json[String(n)]["name"].string != nil){
-                        if json[String(n)]["name"].string! == "Campus Connector"{
-                            var bus_in_list = false
-                            // search it the bus is added
-                            for bus in self.current_bus{
-                                if (json[String(n)]["fleetnum"].string != nil){
-                                    if ( Int(json[String(n)]["fleetnum"].string!) == bus.fleetnum){
-                                        bus_in_list = true
-                                        bus.updateBus(j: json[String(n)])
-                                        bus.used = true
+                if json.count != 0 {
+                    for n in 0...json.count-1{
+                        if (json[String(n)]["name"].string != nil){
+//                            if json[String(n)]["name"].string! == "Campus Connector"{
+                                var bus_in_list = false
+                                // search it the bus is added
+                                for bus in self.current_bus{
+                                    if (json[String(n)]["fleetnum"].string != nil){
+                                        if ( Int(json[String(n)]["fleetnum"].string!) == bus.fleetnum){
+                                            bus_in_list = true
+                                            bus.updateBus(j: json[String(n)])
+                                            bus.used = true
+                                        }
                                     }
                                 }
-                            }
-                            if (bus_in_list != true){
-                                self.current_bus.append(busClass(j: json[String(n)],mapview: self.mainMapView))
-                            }
+                                if (bus_in_list != true){
+                                    self.current_bus.append(busClass(j: json[String(n)],mapview: self.mainMapView))
+                                }
+//                            }
                         }
                     }
                 }
@@ -267,6 +273,18 @@ class ViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDe
         var emptyBus: [busstation] = [busstation()]
         let json = JsonPackageToServer.packageJson(fleetnum: 0, command: "CancelAppoinment", locationUserWant: &emptyBus)
         JsonPackageToServer.sendJsonToServer(json: json)
+    }
+    @IBAction func deleteCustomLocButton(){
+        for loc in self.current_custom_choice {
+            self.mainMapView.removeAnnotation(loc.busAnnotation)
+        }
+        current_custom_choice.removeAll()
+        let alertController = UIAlertController(title:"Remove all custom locations, this won't cancel the alarm.", message: nil, preferredStyle: .alert)
+        // run this pop in other thread
+        self.present(alertController, animated: true, completion: nil)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+2){
+            self.presentedViewController?.dismiss(animated: false, completion: nil)
+        }
     }
     
     func initalBusStation(){
@@ -338,7 +356,7 @@ extension ViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return all_bus_station.count+current_custom_choice.count
+        return all_bus_station.count+current_custom_choice.count+1
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -414,29 +432,18 @@ extension ViewController: UITableViewDelegate {
                     self.presentedViewController?.dismiss(animated: false, completion: nil)
                 }
                 // add target annotation
-                DispatchQueue.main.async {
-                    var count = 1
-                    if self.targetAnnotation.isEmpty {
-                        for target in self.track_target {
-                            let annotation = MKPointAnnotation()
-                            annotation.coordinate = CLLocation(latitude: target.lat, longitude: target.long).coordinate
-                            annotation.title = "Alarm "+String(count)
-                            self.targetAnnotation.append(annotation)
-                            count += 1
-                            }
-                    } else {
-                        self.mainMapView.removeAnnotations(self.targetAnnotation)
-                        for target in self.track_target {
-                            let annotation = MKPointAnnotation()
-                            annotation.coordinate = CLLocation(latitude: target.lat, longitude: target.long).coordinate
-                            annotation.title = "Alarm "+String(count)
-                            self.targetAnnotation.append(annotation)
-                            count += 1
-                        }
-                    }
-                    self.mainMapView.addAnnotations(self.targetAnnotation)
+                var count = 1
+                if !self.targetAnnotation.isEmpty {
+                    self.mainMapView.removeAnnotations(self.targetAnnotation)
                 }
-                
+                for target in self.track_target {
+                    let annotation = MKPointAnnotation()
+                    annotation.coordinate = CLLocation(latitude: target.lat, longitude: target.long).coordinate
+                    annotation.title = "Alarm "+String(count)
+                    self.targetAnnotation.append(annotation)
+                    count += 1
+                    self.mainMapView.addAnnotation(annotation)
+                }
             }else{
                 // can't select more than 5 locations
                 let alertController = UIAlertController(title:"Can not select locations for more than 5 (selected or selecting), please do it again", message: nil, preferredStyle: .alert)
